@@ -1,0 +1,52 @@
+﻿@{
+    ViewBag.Title = "Chat Básico";
+    Layout = null;
+}
+<!-- Referenciando os scripts adicionados ao Bundle -->
+<!-- Referencia para o script de Hub criado automaticamente -->
+
+
+@Scripts.Render("~/bundles/jquery")
+<script src="~/Scripts/jquery.signalR-2.2.0.min.js"></script>
+<script src="/signalr/hubs"></script>
+
+<script type="text/javascript">
+    
+    // Declarando o proxy de referencia ao Hub do SignalR
+    var chat = $.connection.chatHub;
+        //Relacionando e criando a função que será chamada pelo backend para distribuir as mensagems, os nomes, por convenção são em "camelCase"
+        $(function () {
+
+            chat.client.enviarMensagem = function (usuario, msg) {
+
+                // Area do chat
+                var chatWin = $("#chatWindow");
+
+                // Publicando a mensagem no chat
+                chatWin.html(chatWin.html() + "<b>" + usuario + "</b>: " + msg + "<br />");
+            };
+
+            $.connection.hub.start().done(function () {
+                //Após a conexão, atrela o evento do clique.
+                $('#mensagem').keypress(function (e) {
+                    if (e.which == 13) { // Validando o botão enter
+
+                        // Enviando a mensagem com o usuário e a mensagem selecionadas. A Função EnviarMsg está no Hub (Backend)
+                        chat.server.enviarMsg($("#apelido").val(), $("#mensagem").val());
+                        // Limpando o texto da mensagem.
+                        $("#mensagem").val("");
+                    }
+                });
+
+            });
+
+            
+        });
+
+</script>
+
+<body>
+    <label for="apelido">Seu Apelido:</label><input type="text" name="apelido" id="apelido" /><br />
+    <label for="mensagem">Mensagem:</label><input type="text" name="mensagem" id="mensagem" maxlength="100" />
+    <div id="chatWindow" style="width: 100%; height: 300px; overflow: scroll; border: 1px solid grey"></div>
+</body>
